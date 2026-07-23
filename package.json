@@ -2,15 +2,34 @@
   "name": "n8n-node-vetter",
   "version": "0.1.0",
   "description": "Vets a community node package against n8n's verified-node standards and prints a severity-ranked review. Runnable by contributors before submitting to the Creator Portal.",
-  "keywords": ["n8n", "community-nodes", "verified-nodes", "vetting", "lint", "review"],
+  "keywords": [
+    "n8n",
+    "community-nodes",
+    "verified-nodes",
+    "vetting",
+    "lint",
+    "review"
+  ],
   "license": "MIT",
-  "author": { "name": "Guillaume Flambard", "email": "g.flambard@gmail.com" },
-  "repository": { "type": "git", "url": "https://github.com/guillaume-flambard/n8n-node-vetter.git" },
-  "engines": { "node": ">=18.10" },
-  "bin": { "n8n-node-vetter": "dist/cli.js" },
+  "author": {
+    "name": "Guillaume Flambard",
+    "email": "g.flambard@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guillaume-flambard/n8n-node-vetter.git"
+  },
+  "engines": {
+    "node": ">=18.10"
+  },
+  "bin": {
+    "n8n-node-vetter": "dist/cli.js"
+  },
   "main": "dist/vetter.js",
   "types": "dist/vetter.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
