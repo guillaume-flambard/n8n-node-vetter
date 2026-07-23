@@ -1,5 +1,11 @@
 # n8n-node-vetter
 
+[![CI](https://github.com/guillaume-flambard/n8n-node-vetter/actions/workflows/ci.yml/badge.svg)](https://github.com/guillaume-flambard/n8n-node-vetter/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D18.10-brightgreen.svg)](package.json)
+[![runtime deps](https://img.shields.io/badge/runtime%20deps-0-brightgreen.svg)](package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](tsconfig.json)
+
 Vet a community node package against n8n's verified-node standards, and get a
 severity-ranked review back. Runnable by any contributor before they submit to the
 [Creator Portal](https://creators.n8n.io/nodes), and by a reviewer on any submission.
