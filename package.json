@@ -23,7 +23,8 @@
     "node": ">=18.10"
   },
   "bin": {
-    "n8n-node-vetter": "dist/cli.js"
+    "n8n-node-vetter": "dist/cli.js",
+    "n8n-pr-review": "dist/pr-cli.js"
   },
   "main": "dist/vetter.js",
   "types": "dist/vetter.d.ts",

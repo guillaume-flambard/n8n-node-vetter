@@ -47,6 +47,22 @@ node dist/cli.js ./pkg --json     # machine-readable, for CI
 node dist/cli.js ./pkg --strict   # exit non-zero on warnings too
 ```
 
+## Reviewing a PR
+
+`n8n-pr-review` runs the same deterministic vet at the PR head, then adds the one
+signal a per-package vet can't see: **what the PR changed**, and whether it
+**introduces a runtime dependency** — the single most common way a community-node PR
+breaks the verified-node bar. It reads the diff from git; it does not post to GitHub,
+it prints a review you paste.
+
+```bash
+node dist/pr-cli.js /path/to/node-repo --base main   # diff against the PR's target
+node dist/pr-cli.js ./repo --base HEAD~1 --json       # machine-readable
+```
+
+A PR that adds a runtime dependency is reported `BLOCKED` with the dep named, and exits
+non-zero — ready to gate in CI on every node PR.
+
 Exit codes: `0` clean, `1` blocked (a hard requirement fails), `2` bad usage. With
 `--strict`, warnings also exit `1` — wire that into CI to hold the bar.
 
