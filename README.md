@@ -1,5 +1,6 @@
 # n8n-node-vetter
 
+[![npm](https://img.shields.io/npm/v/n8n-node-vetter.svg)](https://www.npmjs.com/package/n8n-node-vetter)
 [![CI](https://github.com/guillaume-flambard/n8n-node-vetter/actions/workflows/ci.yml/badge.svg)](https://github.com/guillaume-flambard/n8n-node-vetter/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.10-brightgreen.svg)](package.json)
