@@ -1,0 +1,31 @@
+name: n8n verified-node vet
+description: Vet a community node package against n8n's verified-node standards, so a class of failure can't reach a human reviewer.
+author: Guillaume Flambard
+branding:
+  icon: check-circle
+  color: green
+inputs:
+  path:
+    description: Path to the node package to vet.
+    required: false
+    default: '.'
+  strict:
+    description: Fail on warnings too, not only hard blockers.
+    required: false
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - shell: bash
+      env:
+        VET_PATH: ${{ inputs.path }}
+        VET_STRICT: ${{ inputs.strict }}
+      run: |
+        set -euo pipefail
+        args="$VET_PATH"
+        if [ "$VET_STRICT" = "true" ]; then args="$args --strict"; fi
+        # Runs the published, provenance-signed package. Pinned tag recommended in production.
+        npx --yes n8n-node-vetter@latest $args --md

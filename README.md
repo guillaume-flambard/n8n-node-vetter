@@ -66,6 +66,29 @@ non-zero — ready to gate in CI on every node PR.
 Exit codes: `0` clean, `1` blocked (a hard requirement fails), `2` bad usage. With
 `--strict`, warnings also exit `1` — wire that into CI to hold the bar.
 
+## CI gate (GitHub Action)
+
+The repo ships a composite action so a node repo can vet itself on every push and PR,
+turning the reviewer checklist into a gate a class of failure can't get past:
+
+```yaml
+# .github/workflows/vet.yml in a community-node repo
+name: vet
+on: [push, pull_request]
+jobs:
+  vet:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: guillaume-flambard/n8n-node-vetter@v0.1.1   # pin a tag in production
+        with:
+          path: '.'
+          strict: 'false'   # 'true' to fail on warnings too
+```
+
+It runs the published, provenance-signed package via `npx`, so there is nothing to build.
+A hard-fail exits non-zero and fails the check.
+
 ## What it checks
 
 Deterministic rules (this tool decides pass/fail):
