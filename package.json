@@ -1,6 +1,6 @@
 {
   "name": "n8n-node-vetter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Vets a community node package against n8n's verified-node standards and prints a severity-ranked review. Runnable by contributors before submitting to the Creator Portal.",
   "keywords": [
     "n8n",
