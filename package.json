@@ -1,0 +1,34 @@
+{
+  "name": "n8n-node-vetter",
+  "version": "0.1.0",
+  "description": "Vets a community node package against n8n's verified-node standards and prints a severity-ranked review. Runnable by contributors before submitting to the Creator Portal.",
+  "keywords": ["n8n", "community-nodes", "verified-nodes", "vetting", "lint", "review"],
+  "license": "MIT",
+  "author": { "name": "Guillaume Flambard", "email": "g.flambard@gmail.com" },
+  "repository": { "type": "git", "url": "https://github.com/guillaume-flambard/n8n-node-vetter.git" },
+  "engines": { "node": ">=18.10" },
+  "bin": { "n8n-node-vetter": "dist/cli.js" },
+  "main": "dist/vetter.js",
+  "types": "dist/vetter.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "format": "prettier src --write",
+    "lint": "eslint src",
+    "lintfix": "eslint src --fix",
+    "test": "jest",
+    "vet": "node dist/cli.js"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.3.2",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.5.3"
+  }
+}

@@ -1,0 +1,100 @@
+# n8n-node-vetter
+
+Vet a community node package against n8n's verified-node standards, and get a
+severity-ranked review back. Runnable by any contributor before they submit to the
+[Creator Portal](https://creators.n8n.io/nodes), and by a reviewer on any submission.
+
+It answers one question mechanically: **would this package clear the verified-node
+requirements, and if not, exactly where does it fall short?**
+
+## Why
+
+n8n's Community Engineering squad reviews community node submissions and runs an
+auto-release pipeline. Most rejections come down to a short list of concrete,
+checkable things: the package name namespace, the `n8n-community-node-package`
+keyword, the manifest pointing at `dist/`, **zero runtime dependencies**, a
+provenance publish. Those are the rules the linter and reviewer apply by hand every
+time. This tool encodes them once so the check runs in a second, the same way for
+everyone, and can sit in CI on every submission.
+
+It complements [n8n-mcp](https://github.com/czlonkowski/n8n-mcp) rather than
+overlapping it: n8n-mcp validates node *schemas and workflows*; this validates a
+*package's submission compliance* — a different gate.
+
+## Install / run
+
+No runtime dependencies. Build once, then point it at a package directory (a repo
+checkout or an unpacked npm tarball):
+
+```bash
+npm ci && npm run build
+node dist/cli.js /path/to/some-community-node
+```
+
+Output formats:
+
+```bash
+node dist/cli.js ./pkg            # markdown review (default)
+node dist/cli.js ./pkg --text     # one line per rule, for a terminal
+node dist/cli.js ./pkg --json     # machine-readable, for CI
+node dist/cli.js ./pkg --strict   # exit non-zero on warnings too
+```
+
+Exit codes: `0` clean, `1` blocked (a hard requirement fails), `2` bad usage. With
+`--strict`, warnings also exit `1` — wire that into CI to hold the bar.
+
+## What it checks
+
+Deterministic rules (this tool decides pass/fail):
+
+| Rule | Severity | Checks |
+|------|----------|--------|
+| `PKG_NAME` | fail | name is `n8n-nodes-*` or `@scope/n8n-nodes-*` |
+| `KEYWORD` | fail | `n8n-community-node-package` keyword present |
+| `N8N_ATTR` | fail | `package.json` `n8n` attribute lists nodes |
+| `N8N_DIST` | fail | manifest points at compiled `dist/`, not source |
+| `NO_RUNTIME_DEPS` | fail | no runtime dependencies (the selective one) |
+| `FILES_DIST` | warn | `files` ships `dist` in the tarball |
+| `README` | warn | user-facing documentation present |
+| `ESLINT_PLUGIN` | warn | `eslint-plugin-n8n-nodes-base` wired up |
+| `PROVENANCE` | warn | CI publish path with provenance exists |
+| `NO_FS_ENV` | warn | node code avoids `fs` / `child_process` / `process.env` |
+| `DECLARATIVE` | info | declarative routing vs programmatic `execute()` |
+
+Judgment rules the tool deliberately does **not** rule on — they need a human or an
+LLM reviewer, and the [`/n8n-vetting`](.claude/skills/n8n-vetting/SKILL.md) playbook
+covers them: unsigned-webhook verify-by-refetch, credential leakage, request
+content-type tested against the live API, `getAll` returning the list envelope
+instead of items, and overlap with n8n's paid features.
+
+The full rule spec, with sources and rationale, is in
+[`docs/VETTING-RULES.md`](docs/VETTING-RULES.md).
+
+## Claude Code integration (ships with the repo)
+
+The repo carries its own Claude Code assets under [`.claude/`](.claude), so cloning
+gets the whole workflow, not just the binary:
+
+- **Skill** [`.claude/skills/n8n-vetting`](.claude/skills/n8n-vetting/SKILL.md) — the
+  `/n8n-vetting` review playbook (deterministic run, judgment pass, six-section review),
+  with `references/` holding the judgment checklist and an n8n context brief.
+- **Agent** [`.claude/agents/n8n-node-vetter.md`](.claude/agents/n8n-node-vetter.md) — a
+  read-only reviewer that runs the CLI and adds the judgment layer.
+
+Run Claude Code from the repo root and both are discovered automatically; all their
+paths are repo-relative. The tool itself is a plain CLI and needs none of this.
+
+## Design
+
+- **Zero runtime dependencies**, Node built-ins only. The tool holds itself to the
+  bar it checks for.
+- Rules are **pure functions** of a `PackageContext` gathered once by the loader, so
+  each rule is unit-tested in isolation.
+- Published from CI with provenance (`release.yml`) — the same path it asks of the
+  packages it vets.
+
+## Sources
+
+Rules track the official docs (submit-community-nodes standards, verified-install,
+blocklist) and patterns from shipping the `n8n-nodes-opn` community node. See
+`docs/VETTING-RULES.md` for the per-rule citations.
