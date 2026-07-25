@@ -9,6 +9,9 @@ export function ctx(partial: Partial<PackageContext> = {}): PackageContext {
 		sourceFiles: partial.sourceFiles ?? [],
 		readme: partial.readme ?? null,
 		workflows: partial.workflows ?? [],
+		// Default to a repo checkout, the case most rules are written for. Pass [] to model an
+		// unpacked npm tarball, where repo-only files cannot exist.
+		repoMarkers: partial.repoMarkers ?? ['.git'],
 	};
 }
 

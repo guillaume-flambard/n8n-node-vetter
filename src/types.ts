@@ -40,6 +40,13 @@ export interface PackageContext {
 	readme: string | null;
 	/** Workflow files under .github/workflows. */
 	workflows: SourceFile[];
+	/**
+	 * Repo-only markers found at the root (.git, .github, .gitignore, tsconfig.json, src).
+	 * An unpacked npm tarball carries none of them, so an empty list means the package under
+	 * review is a published artifact rather than a repo checkout. Rules that can only be
+	 * answered from repo files use this to skip instead of reporting a false negative.
+	 */
+	repoMarkers: string[];
 }
 
 export type Rule = (ctx: PackageContext) => Finding;

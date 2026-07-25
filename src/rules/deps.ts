@@ -26,27 +26,31 @@ export const eslintPlugin: Rule = (ctx) => {
 	const id = 'ESLINT_PLUGIN';
 	const title = 'ESLint n8n community ruleset is wired up';
 	const dev = ctx.pkg?.devDependencies ?? {};
-	const hasDep = Object.prototype.hasOwnProperty.call(dev, 'eslint-plugin-n8n-nodes-base');
+	const has = (name: string) => Object.prototype.hasOwnProperty.call(dev, name);
+	const hasDep = has('eslint-plugin-n8n-nodes-base');
+	// @n8n/node-cli is n8n's own official CLI for community nodes and depends on both
+	// eslint-plugin-n8n-nodes-base and @n8n/eslint-plugin-community-nodes. Packages scaffolded
+	// with it therefore lint correctly while declaring neither plugin directly, and the earlier
+	// devDependency-only check warned hardest at the packages following n8n's current guidance.
+	const hasCli = has('@n8n/node-cli');
+	const hasCommunityPlugin = has('@n8n/eslint-plugin-community-nodes');
 	const configReferences = ctx.sourceFiles.some(
-		(f) => /eslintrc/i.test(f.path) && /n8n-nodes-base/.test(f.content),
+		(f) => /eslintrc|eslint\.config/i.test(f.path) && /n8n-nodes-base|community-nodes/.test(f.content),
 	);
-	if (hasDep || configReferences) {
-		return make(
-			id,
-			title,
-			'warn',
-			'pass',
-			hasDep
-				? 'eslint-plugin-n8n-nodes-base is a devDependency.'
-				: 'an ESLint config extends the n8n-nodes-base ruleset.',
-		);
+	if (hasDep || hasCli || hasCommunityPlugin || configReferences) {
+		let evidence: string;
+		if (hasDep) evidence = 'eslint-plugin-n8n-nodes-base is a devDependency.';
+		else if (hasCli) evidence = '@n8n/node-cli is a devDependency; it brings the n8n ESLint plugins.';
+		else if (hasCommunityPlugin) evidence = '@n8n/eslint-plugin-community-nodes is a devDependency.';
+		else evidence = 'an ESLint config extends the n8n ruleset.';
+		return make(id, title, 'warn', 'pass', evidence);
 	}
 	return make(
 		id,
 		title,
 		'warn',
 		'warn',
-		'eslint-plugin-n8n-nodes-base not found in devDependencies or ESLint config.',
-		'Add the plugin and extend plugin:n8n-nodes-base/community (+ nodes, credentials), or scaffold with the n8n-node CLI.',
+		'no n8n ESLint wiring found: neither eslint-plugin-n8n-nodes-base, @n8n/node-cli, @n8n/eslint-plugin-community-nodes, nor an ESLint config extending them.',
+		'Add the plugin and extend plugin:n8n-nodes-base/community (+ nodes, credentials), or scaffold with @n8n/node-cli, which brings both n8n plugins.',
 	);
 };

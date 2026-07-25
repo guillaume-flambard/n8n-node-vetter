@@ -72,5 +72,11 @@ export function loadPackage(root: string): PackageContext {
 		.filter((p) => path.dirname(p) === abs)[0];
 	if (readmeEntry) readme = readSafe(readmeEntry);
 
-	return { root: abs, pkg, pkgError, sourceFiles, readme, workflows };
+	// Repo-only markers. npm strips all of these when it builds a tarball, so their absence
+	// tells a rule it is looking at a published artifact and must not judge repo files.
+	const repoMarkers = ['.git', '.github', '.gitignore', 'tsconfig.json', 'src'].filter((name) =>
+		fs.existsSync(path.join(abs, name)),
+	);
+
+	return { root: abs, pkg, pkgError, sourceFiles, readme, workflows, repoMarkers };
 }

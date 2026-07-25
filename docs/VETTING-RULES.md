@@ -80,12 +80,21 @@ Severity: **fail** blocks verification, **warn** should be fixed or manually con
 
 ### ESLINT_PLUGIN — community linter wired
 - **Severity:** warn
-- **Check:** `eslint-plugin-n8n-nodes-base` is a devDependency, and an ESLint config
-  extends its `community` / `nodes` / `credentials` rulesets.
-- **Why:** the official flow lints with this plugin (`npm run lint`). Its absence means the
+- **Check:** any of these wires the n8n ruleset: `eslint-plugin-n8n-nodes-base` as a
+  devDependency, `@n8n/node-cli` as a devDependency, `@n8n/eslint-plugin-community-nodes` as a
+  devDependency, or an ESLint config (`.eslintrc*` or flat `eslint.config.*`) extending them.
+- **Why:** the official flow lints with these plugins (`npm run lint`). Their absence means the
   node was never checked against n8n's own conventions.
+- **Why `@n8n/node-cli` counts:** it is n8n's own *"Official CLI for developing community
+  nodes"* and depends directly on both `eslint-plugin-n8n-nodes-base` and
+  `@n8n/eslint-plugin-community-nodes`, so a package scaffolded with it lints correctly while
+  declaring neither plugin itself. Checking only for the standalone plugin warned hardest at the
+  packages following n8n's current guidance: in a sweep of the 100 most-installed vetted
+  packages, 38 of the 48 warnings were `@n8n/node-cli` users (see
+  `2026-07-25` verified-node registry sweep). Accepting the CLI cut the warnings to 10, all of
+  which lint generically with no n8n ruleset at all.
 - **Fix:** add the plugin and extend `plugin:n8n-nodes-base/community` (+ `nodes`,
-  `credentials`) in `.eslintrc`. Or scaffold with the `n8n-node` CLI, which wires it.
+  `credentials`), or scaffold with `@n8n/node-cli`, which wires both n8n plugins.
 
 ### PROVENANCE — published via GitHub Actions with provenance
 - **Severity:** warn (cannot be proven offline; flags the gap)
@@ -96,6 +105,14 @@ Severity: **fail** blocks verification, **warn** should be fixed or manually con
   GitHub Actions with a provenance statement. n8n won't accept verified nodes published
   directly from a local machine."* Definitive proof is the attestation on the npm registry;
   the CLI can only confirm the publishing path exists in the repo.
+- **Skips on a published artifact.** npm strips `.github/` when it builds a tarball, so an
+  unpacked package cannot carry CI config and "no workflows found" says nothing about how it was
+  published. When the package root has no repo markers at all (`.git`, `.github`, `.gitignore`,
+  `tsconfig.json`, `src`), the rule returns `skip` and points at the registry instead. Before
+  this, sweeping 100 published packages warned on all 100 and made every verdict
+  `changes-needed`, which is the whole rule's signal inverted.
+- **Reading the real answer:** `npm view <pkg> dist.attestations`, or the Provenance block on the
+  npm package page.
 - **Fix:** add the starter `publish.yml` (or an OIDC `release.yml` with `id-token: write`
   and `npm publish --provenance`), and configure a Trusted Publisher on npmjs.com.
 

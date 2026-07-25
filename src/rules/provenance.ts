@@ -12,6 +12,18 @@ export const provenance: Rule = (ctx) => {
 	const id = 'PROVENANCE';
 	const title = 'Publishes via GitHub Actions with provenance';
 	if (ctx.workflows.length === 0) {
+		// An unpacked npm tarball never carries .github/, so "no workflows" says nothing about
+		// how the package was published. Warning there marked every published package as
+		// changes-needed. The answer lives on the registry instead: dist.attestations.provenance.
+		if (ctx.repoMarkers.length === 0) {
+			return make(
+				id,
+				title,
+				'warn',
+				'skip',
+				'published artifact: npm tarballs do not ship .github/, so CI config cannot be read here. Check the attestation on the registry instead (npm view <pkg> dist.attestations).',
+			);
+		}
 		return make(
 			id,
 			title,

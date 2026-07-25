@@ -2,8 +2,15 @@ import { provenance } from '../src/rules';
 import { ctx } from './fixtures';
 
 describe('PROVENANCE', () => {
-	it('warns when there is no workflow', () => {
+	it('warns when a repo checkout has no workflow', () => {
 		expect(provenance(ctx({ workflows: [] })).status).toBe('warn');
+	});
+	it('skips on a published tarball, where .github cannot exist', () => {
+		// Sweeping 100 published packages warned on all 100 and made every verdict
+		// changes-needed. A tarball carries no repo markers; the attestation is on the registry.
+		const f = provenance(ctx({ workflows: [], repoMarkers: [] }));
+		expect(f.status).toBe('skip');
+		expect(f.evidence).toMatch(/attestation/i);
 	});
 	it('passes on an explicit --provenance publish', () => {
 		const workflows = [
