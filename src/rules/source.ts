@@ -39,3 +39,39 @@ export const declarative: Rule = (ctx) => {
 	else evidence = 'Could not determine style from the shipped files (source may not be published).';
 	return make(id, title, 'info', 'pass', evidence);
 };
+
+/**
+ * LIST_ENVELOPE — a declarative list operation with no postReceive rootProperty.
+ *
+ * A "get many" style operation whose routing returns the API's list envelope
+ * (`{ data: [...] }`, `{ items: [...] }`, `{ results: [...] }`) emits that envelope as a
+ * single n8n item unless a `postReceive` rootProperty unwraps it. This is the tell that a
+ * Get Many was never run against a real list. Detects the common, statically-visible case
+ * (operations named getAll / get many / returnAll with no rootProperty anywhere); a list
+ * endpoint hidden behind a non-list operation name still needs a human — say so.
+ */
+export const listEnvelope: Rule = (ctx) => {
+	const id = 'LIST_ENVELOPE';
+	const title = 'List operations unwrap their response envelope';
+	const product = ctx.sourceFiles.filter((f) => isProductCode(f.path));
+	if (product.length === 0) {
+		return make(id, title, 'warn', 'skip', 'No product code files found to scan.');
+	}
+	const listOps = grep(product, /value:\s*['"]getAll['"]|['"]returnAll['"]|get\s+many|get\s+all/i);
+	if (listOps.length === 0) {
+		return make(id, title, 'warn', 'pass', 'No get-many/getAll list operation detected.');
+	}
+	const rootProp = grep(product, /rootProperty/i);
+	if (rootProp.length > 0) {
+		return make(id, title, 'warn', 'pass', `list operation(s) present and ${rootProp.length} rootProperty unwrap(s) found.`);
+	}
+	const sample = listOps.slice(0, 5).map((h) => `${h.path}:${h.line} ${h.text}`);
+	return make(
+		id,
+		title,
+		'warn',
+		'warn',
+		`${listOps.length} list operation(s) but no postReceive rootProperty anywhere:\n    ${sample.join('\n    ')}`,
+		"Add a routing output postReceive of type 'rootProperty' pointing at the API's list field (data/items/results), so a list returns N items instead of one envelope. Note: an endpoint that returns a list under a non-list operation name won't be caught here — verify Get Many operations against a real multi-item response by hand.",
+	);
+};

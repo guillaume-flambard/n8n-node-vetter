@@ -1,4 +1,4 @@
-import { declarative, noFsEnv } from '../src/rules';
+import { declarative, listEnvelope, noFsEnv } from '../src/rules';
 import { ctx } from './fixtures';
 
 describe('NO_FS_ENV', () => {
@@ -41,5 +41,36 @@ describe('DECLARATIVE', () => {
 		const f = declarative(ctx({ sourceFiles: [] }));
 		expect(f.severity).toBe('info');
 		expect(f.status).toBe('pass');
+	});
+});
+
+describe('LIST_ENVELOPE', () => {
+	it('passes when no list operation is present', () => {
+		const sourceFiles = [{ path: 'nodes/A.node.ts', content: "value: 'create'" }];
+		expect(listEnvelope(ctx({ sourceFiles })).status).toBe('pass');
+	});
+	it('warns on a getAll operation with no rootProperty', () => {
+		const sourceFiles = [{ path: 'dist/nodes/A.node.js', content: "{ value: 'getAll', routing: { request: { method: 'GET', url: '/items' } } }" }];
+		const f = listEnvelope(ctx({ sourceFiles }));
+		expect(f.status).toBe('warn');
+		expect(f.evidence).toContain('dist/nodes/A.node.js');
+	});
+	it('passes when a getAll operation unwraps via rootProperty', () => {
+		const sourceFiles = [{ path: 'nodes/A.node.ts', content: "value: 'getAll', output: { postReceive: [{ type: 'rootProperty', properties: { property: 'data' } }] }" }];
+		expect(listEnvelope(ctx({ sourceFiles })).status).toBe('pass');
+	});
+	it('detects a "Get Many" action name', () => {
+		const sourceFiles = [{ path: 'nodes/A.node.ts', content: "action: 'Get many records'" }];
+		expect(listEnvelope(ctx({ sourceFiles })).status).toBe('warn');
+	});
+	it('ignores list operations declared only in test files while scanning product code', () => {
+		const sourceFiles = [
+			{ path: 'nodes/A.node.ts', content: "value: 'create'" },
+			{ path: 'tests/A.test.ts', content: "value: 'getAll'" },
+		];
+		expect(listEnvelope(ctx({ sourceFiles })).status).toBe('pass');
+	});
+	it('skips when there is no product code', () => {
+		expect(listEnvelope(ctx({ sourceFiles: [] })).status).toBe('skip');
 	});
 });

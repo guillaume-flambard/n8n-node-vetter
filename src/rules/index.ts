@@ -2,7 +2,7 @@ import { Rule } from '../types';
 import { filesDist, keyword, n8nAttr, n8nDist, pkgName, readme } from './manifest';
 import { eslintPlugin, noRuntimeDeps } from './deps';
 import { provenance } from './provenance';
-import { declarative, noFsEnv } from './source';
+import { declarative, listEnvelope, noFsEnv } from './source';
 
 /**
  * The full ruleset, in report order (hard blockers first). Each rule is a pure
@@ -20,6 +20,7 @@ export const RULES: Rule[] = [
 	provenance,
 	noFsEnv,
 	declarative,
+	listEnvelope,
 ];
 
 export {
@@ -34,4 +35,5 @@ export {
 	provenance,
 	noFsEnv,
 	declarative,
+	listEnvelope,
 };
